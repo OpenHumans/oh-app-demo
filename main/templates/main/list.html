@@ -28,7 +28,7 @@
                 <a href="{{ file.download_url }}" class="btn btn-secondary btn-sm text-success" target="_blank">Download</a>
             </td>
             <td>
-                <a href="{% url 'delete' file_id=file.id %}" class="btn btn-secondary btn-sm text-danger">Delete</a>
+                <a href="{% url 'openhumans:delete' file_id=file.id %}" class="btn btn-secondary btn-sm text-danger">Delete</a>
             </td>
         </tr>
         {% endfor %}
