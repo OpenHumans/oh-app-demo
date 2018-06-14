@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from django.conf.urls import url, include
+from openhumans.views import delete_file
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,5 +28,6 @@ urlpatterns = [
 ]
 
 urlpatterns += [
+    url(r'^delete/(?P<file_id>\w+)/?$', delete_file, {"success_template":'blank', "not_authorized_template":'blank'}, 'openhumans'),
     url('', include(('openhumans.urls', 'openhumans'), namespace='openhumans'))
 ]
