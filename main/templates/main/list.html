@@ -34,6 +34,8 @@
         {% endfor %}
         </tbody>
     </table>
+
+    <a href="{% url 'openhumans:delete_all_files' %}" class="btn btn-secondary btn-sm text-danger">Delete all files</a>
     {% else %}
     <div class="text-center">
         <p class="lead">No files uploaded</p>
