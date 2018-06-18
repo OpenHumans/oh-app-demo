@@ -15,7 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-
+from django.conf.urls import url
+from openhumans.views import upload
 urlpatterns = [
     path('admin/', admin.site.urls),
 ]
@@ -23,4 +24,8 @@ urlpatterns = [
 urlpatterns = [
     path('', include('main.urls')),
     path('admin/', admin.site.urls),
+]
+
+urlpatterns += [
+    url('', include(('openhumans.urls', 'openhumans'), namespace='openhumans'))
 ]

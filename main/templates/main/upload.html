@@ -4,7 +4,7 @@
 
 <h2>Upload your data</h2>
 
-<form method="post" enctype="multipart/form-data" action="{% url 'upload' %}">
+<form method="post" enctype="multipart/form-data" action="{% url 'openhumans:upload' %}">
   {% csrf_token %}
   <div class="form-group">
     <label for="file_desc">Description of the data (type of data, sampling date etc.)</label>

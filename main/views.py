@@ -50,48 +50,6 @@ def delete_all_oh_files(oh_member):
         all_files=True)
 
 
-def raise_http_error(url, response, message):
-    raise HTTPError(url, response.status_code, message, hdrs=None, fp=None)
-
-
-def upload_file_to_oh(oh_member, filehandle, metadata):
-    """
-    This demonstrates using the Open Humans "large file" upload process.
-    The small file upload process is simpler, but it can time out. This
-    alternate approach is required for large files, and still appropriate
-    for small files.
-    This process is "direct to S3" using three steps: 1. get S3 target URL from
-    Open Humans, 2. Perform the upload, 3. Notify Open Humans when complete.
-    """
-    # Get the S3 target from Open Humans.
-    upload_url = '{}?access_token={}'.format(
-        OH_DIRECT_UPLOAD, oh_member.get_access_token(**oh_client_info()))
-    req1 = requests.post(upload_url,
-                         data={'project_member_id': oh_member.oh_id,
-                               'filename': filehandle.name,
-                               'metadata': json.dumps(metadata)})
-    if req1.status_code != 201:
-        raise raise_http_error(upload_url, req1,
-                               'Bad response when starting file upload.')
-
-    # Upload to S3 target.
-    req2 = requests.put(url=req1.json()['url'], data=filehandle)
-    if req2.status_code != 200:
-        raise raise_http_error(req1.json()['url'], req2,
-                               'Bad response when uploading to target.')
-
-    # Report completed upload to Open Humans.
-    complete_url = ('{}?access_token={}'.format(
-        OH_DIRECT_UPLOAD_COMPLETE, oh_member.get_access_token(
-            **oh_client_info())))
-    req3 = requests.post(complete_url,
-                         data={'project_member_id': oh_member.oh_id,
-                               'file_id': req1.json()['id']})
-    if req3.status_code != 200:
-        raise raise_http_error(complete_url, req2,
-                               'Bad response when completing upload.')
-
-
 def get_auth_url():
     if settings.OPENHUMANS_CLIENT_ID and settings.OPENHUMANS_REDIRECT_URI:
         auth_url = ohapi.api.oauth2_auth_url(
@@ -160,25 +118,6 @@ def logout_user(request):
     """
     if request.method == 'POST':
         logout(request)
-    return redirect('index')
-
-
-def upload(request):
-    if request.method == 'POST':
-        desc = request.POST['file_desc']
-        tags = request.POST['file_tags'].split(',')
-        uploaded_file = request.FILES.get('data_file')
-        if uploaded_file is not None:
-            metadata = {'tags': tags,
-                        'description': desc}
-            upload_file_to_oh(
-                request.user.openhumansmember,
-                uploaded_file,
-                metadata)
-        return redirect('index')
-    else:
-        if request.user.is_authenticated:
-            return render(request, 'main/upload.html')
     return redirect('index')
 
 
