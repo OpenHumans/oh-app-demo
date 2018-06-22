@@ -27,15 +27,11 @@
             <td>
                 <a href="{{ file.download_url }}" class="btn btn-secondary btn-sm text-success" target="_blank">Download</a>
             </td>
-            <td>
-                <a href="{% url 'openhumans:delete' file_id=file.id %}" class="btn btn-secondary btn-sm text-danger">Delete</a>
-            </td>
         </tr>
         {% endfor %}
         </tbody>
     </table>
 
-    <a href="{% url 'openhumans:delete_all_files' %}" class="btn btn-secondary btn-sm text-danger">Delete all files</a>
     {% else %}
     <div class="text-center">
         <p class="lead">No files uploaded</p>
