@@ -26,10 +26,20 @@
             <td>
                 <a href="{{ file.download_url }}" class="btn btn-secondary btn-sm text-success" target="_blank">Download</a>
             </td>
+            <td>
+              <form action="{% url 'openhumans:delete_file' %}" method="post">{% csrf_token %}
+                  <input type="text" name="file_id" value="{{ file.id }}" style="display:none">
+                  <button type="submit">Delete</button>
+              </form>
+            </td>
         </tr>
         {% endfor %}
         </tbody>
     </table>
+
+    <form action="{% url 'openhumans:delete_all_files' %}" method="post">{% csrf_token %}
+        <button type="submit">Delete  all files</button>
+    </form>
 
     {% else %}
     <div class="text-center">
