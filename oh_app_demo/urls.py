@@ -23,8 +23,7 @@ To override specific arguments of views provided by openhumans
 """
 from django.contrib import admin
 from django.urls import include, path
-from django.conf.urls import url, include
-from openhumans.views import delete_file
+from django.conf.urls import url
 urlpatterns = [
     path('admin/', admin.site.urls),
 ]
@@ -35,5 +34,5 @@ urlpatterns = [
 ]
 
 urlpatterns += [
-    url('', include(('openhumans.urls', 'openhumans'), namespace='openhumans'))
+    url('', include(('openhumans.urls', 'openhumans')))
 ]
