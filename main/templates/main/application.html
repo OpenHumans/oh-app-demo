@@ -94,10 +94,6 @@ body {
                     </li>
                     {% endif %}
                   <li>
-                    <form action="{% url 'openhumans:message' %}" method="post">
-                      {% csrf_token %}
-                      <input type="submit" value="Message" style="margin-top:6px;" class="btn btn-default"/>
-                    </form>
                   </li>
                   <li>
                     <form action="{% url 'logout' %}" method="post">{% csrf_token %}<input type="submit" value="Log out" style="margin-top:6px;" class="btn btn-default"></form>
