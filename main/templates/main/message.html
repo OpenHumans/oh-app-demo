@@ -1,8 +1,3 @@
-{% if form.errors %}
-    <p style="color: red;">
-        Please correct the error{{ form.errors|pluralize }} below.
-    </p>
-{% endif %}
 <form action="{% url 'openhumans:message' %}" method="post">
     {% csrf_token %}
     {% if form.non_field_errors %}
