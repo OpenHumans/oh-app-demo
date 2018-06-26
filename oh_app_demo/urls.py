@@ -27,5 +27,5 @@ urlpatterns = [
 ]
 
 urlpatterns += [
-    url('', include(('openhumans.urls', 'openhumans'), namespace='openhumans'))
+    url('', include(('openhumans.urls', 'openhumans')))
 ]
