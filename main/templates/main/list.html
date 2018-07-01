@@ -29,6 +29,8 @@
             <td>
               <form action="{% url 'openhumans:delete_file' %}" method="post">{% csrf_token %}
                   <input type="text" name="file_id" value="{{ file.id }}" style="display:none">
+                  <input type="text" name="file_basename" value=None style="display:none">
+                  <input type="text" name="all_file" value=False style="display:none">
                   <button type="submit">Delete</button>
               </form>
             </td>
