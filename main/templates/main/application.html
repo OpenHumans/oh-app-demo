@@ -90,7 +90,7 @@ body {
                   {% if request.user.is_authenticated %}
                     {% if not is_admin %}
                     <li {% if section == 'list' %} class="active" {%endif%}>
-                      <a href="{% url 'list' %}">File List</a>
+                      <a href="{% url 'openhumans:list' %}">File List</a>
                     </li>
                     {% endif %}
                   <li>

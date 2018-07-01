@@ -36,7 +36,7 @@ def delete_file(request, file_id):
             project_member_id=oh_member.oh_id,
             access_token=oh_member.get_access_token(**oh_client_info()),
             file_id=file_id)
-        return redirect('list')
+        return redirect('openhumans:list')
     return redirect('index')
 
 
@@ -179,15 +179,4 @@ def upload(request):
     else:
         if request.user.is_authenticated:
             return render(request, 'main/upload.html')
-    return redirect('index')
-
-
-def list_files(request):
-    if request.user.is_authenticated:
-        oh_member = request.user.openhumansmember
-        data = ohapi.api.exchange_oauth2_member(
-                    oh_member.get_access_token(**oh_client_info()))
-        context = {'files': data['data']}
-        return render(request, 'main/list.html',
-                      context=context)
     return redirect('index')
