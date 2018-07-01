@@ -25,7 +25,3 @@ urlpatterns = [
     path('', include('main.urls')),
     path('admin/', admin.site.urls),
 ]
-
-urlpatterns += [
-    url('', include(('openhumans.urls', 'openhumans')))
-]
