@@ -10,6 +10,8 @@ from django.contrib.auth import login, logout
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.utils.safestring import mark_safe
+from django.views import generic
+from .forms import FileUploadForm
 
 import ohapi
 import requests
@@ -130,3 +132,21 @@ def list_files(request):
         return render(request, 'main/list.html',
                       context=context)
     return redirect('index')
+
+
+class upload(generic.FormView):
+    form_class = FileUploadForm
+    success_url = 'index'
+    not_authorized_url = 'index'
+    template_name = 'main/upload.html'
+
+    def post(self, request):
+        if request.user.is_authenticated:
+            form = self.form_class(request.POST, request.FILES)
+            desc = form.get_description()
+            tags = form.get_tags().split(',')
+            filehandle = form.get_file()
+            oh_member = request.user.openhumansmember
+            oh_member.upload(desc, tags, filehandle)
+            return redirect(self.success_url)
+        return redirect(self.not_authorized_url)
