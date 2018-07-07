@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.utils.safestring import mark_safe
 from django.views import generic
 from .forms import FileUploadForm
+from django.core.files.storage import DefaultStorage
 
 import ohapi
 import requests
@@ -146,7 +147,12 @@ class upload(generic.FormView):
             desc = form.get_description()
             tags = form.get_tags().split(',')
             filehandle = form.get_file()
+            stream = filehandle.file
             oh_member = request.user.openhumansmember
-            oh_member.upload(desc, tags, filehandle)
+            if filehandle is not None:
+                metadata = {'tags': tags,
+                            'description': desc}
+                access_token = oh_member.get_access_token()
+                oh_member.upload_stream(stream, filehandle.name, metadata, access_token)
             return redirect(self.success_url)
         return redirect(self.not_authorized_url)

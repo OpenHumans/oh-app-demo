@@ -10,5 +10,4 @@ urlpatterns = [
     url(r'^list/?$', views.list_files, name='list'),
     url(r'^delete/(?P<file_id>\w+)/?$', views.delete_file, name='delete'),
     url(r'^upload/?$', views.upload.as_view(), name='upload')
-
 ]
