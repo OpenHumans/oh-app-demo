@@ -27,7 +27,7 @@
                 <a href="{{ file.download_url }}" class="btn btn-secondary btn-sm text-success" target="_blank">Download</a>
             </td>
             <td>
-              <form action="{% url 'openhumans:delete_file' file_id=file.id next='/' %}" method="post">{% csrf_token %}
+              <form action="{% url 'openhumans:delete_file' file_id=file.id file_basename='' next='/' %}" method="post">{% csrf_token %}
                   <button type="submit">Delete</button>
               </form>
             </td>
