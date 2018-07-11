@@ -1,4 +1,3 @@
-import json
 import logging
 try:
     from urllib2 import HTTPError
@@ -12,10 +11,8 @@ from django.contrib import messages
 from django.utils.safestring import mark_safe
 from django.views import generic
 from .forms import FileUploadForm
-from django.core.files.storage import DefaultStorage
 
 import ohapi
-import requests
 
 from .helpers import oh_code_to_member, oh_client_info
 
