@@ -1,4 +1,3 @@
-import json
 import logging
 try:
     from urllib2 import HTTPError
@@ -10,9 +9,10 @@ from django.contrib.auth import login, logout
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.utils.safestring import mark_safe
+from django.views import generic
+from .forms import FileUploadForm
 
 import ohapi
-import requests
 
 from .helpers import oh_code_to_member, oh_client_info
 
@@ -48,48 +48,6 @@ def delete_all_oh_files(oh_member):
         project_member_id=oh_member.oh_id,
         access_token=oh_member.get_access_token(**oh_client_info()),
         all_files=True)
-
-
-def raise_http_error(url, response, message):
-    raise HTTPError(url, response.status_code, message, hdrs=None, fp=None)
-
-
-def upload_file_to_oh(oh_member, filehandle, metadata):
-    """
-    This demonstrates using the Open Humans "large file" upload process.
-    The small file upload process is simpler, but it can time out. This
-    alternate approach is required for large files, and still appropriate
-    for small files.
-    This process is "direct to S3" using three steps: 1. get S3 target URL from
-    Open Humans, 2. Perform the upload, 3. Notify Open Humans when complete.
-    """
-    # Get the S3 target from Open Humans.
-    upload_url = '{}?access_token={}'.format(
-        OH_DIRECT_UPLOAD, oh_member.get_access_token(**oh_client_info()))
-    req1 = requests.post(upload_url,
-                         data={'project_member_id': oh_member.oh_id,
-                               'filename': filehandle.name,
-                               'metadata': json.dumps(metadata)})
-    if req1.status_code != 201:
-        raise raise_http_error(upload_url, req1,
-                               'Bad response when starting file upload.')
-
-    # Upload to S3 target.
-    req2 = requests.put(url=req1.json()['url'], data=filehandle)
-    if req2.status_code != 200:
-        raise raise_http_error(req1.json()['url'], req2,
-                               'Bad response when uploading to target.')
-
-    # Report completed upload to Open Humans.
-    complete_url = ('{}?access_token={}'.format(
-        OH_DIRECT_UPLOAD_COMPLETE, oh_member.get_access_token(
-            **oh_client_info())))
-    req3 = requests.post(complete_url,
-                         data={'project_member_id': oh_member.oh_id,
-                               'file_id': req1.json()['id']})
-    if req3.status_code != 200:
-        raise raise_http_error(complete_url, req2,
-                               'Bad response when completing upload.')
 
 
 def get_auth_url():
@@ -163,25 +121,6 @@ def logout_user(request):
     return redirect('index')
 
 
-def upload(request):
-    if request.method == 'POST':
-        desc = request.POST['file_desc']
-        tags = request.POST['file_tags'].split(',')
-        uploaded_file = request.FILES.get('data_file')
-        if uploaded_file is not None:
-            metadata = {'tags': tags,
-                        'description': desc}
-            upload_file_to_oh(
-                request.user.openhumansmember,
-                uploaded_file,
-                metadata)
-        return redirect('index')
-    else:
-        if request.user.is_authenticated:
-            return render(request, 'main/upload.html')
-    return redirect('index')
-
-
 def list_files(request):
     if request.user.is_authenticated:
         oh_member = request.user.openhumansmember
@@ -191,3 +130,27 @@ def list_files(request):
         return render(request, 'main/list.html',
                       context=context)
     return redirect('index')
+
+
+class upload(generic.FormView):
+    form_class = FileUploadForm
+    success_url = 'index'
+    not_authorized_url = 'index'
+    template_name = 'main/upload.html'
+
+    def post(self, request):
+        if request.user.is_authenticated:
+            form = self.form_class(request.POST, request.FILES)
+            desc = form.get_description()
+            tags = form.get_tags().split(',')
+            filehandle = form.get_file()
+            stream = filehandle.file
+            oh_member = request.user.openhumansmember
+            if filehandle is not None:
+                metadata = {'tags': tags,
+                            'description': desc}
+                file_identifier = None
+                oh_member.upload(stream, filehandle.name, metadata,
+                                 file_identifier)
+            return redirect(self.success_url)
+        return redirect(self.not_authorized_url)
