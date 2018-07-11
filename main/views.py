@@ -152,7 +152,8 @@ class upload(generic.FormView):
             if filehandle is not None:
                 metadata = {'tags': tags,
                             'description': desc}
-                access_token = oh_member.get_access_token()
-                oh_member.upload_stream(stream, filehandle.name, metadata, access_token)
+                file_identifier = None
+                oh_member.upload(stream, filehandle.name, metadata,
+                                 file_identifier)
             return redirect(self.success_url)
         return redirect(self.not_authorized_url)
