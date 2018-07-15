@@ -39,7 +39,7 @@
     </table>
 
     <form action="{% url 'openhumans:delete_all_files' %}" method="post">{% csrf_token %}
-        <input type="text" name="next_url" value="{% url 'list' %}" style="display:none"/>
+        <input type="text" name="next" value="{% url 'list' %}" style="display:none"/>
         <button type="submit">Delete  all files</button>
     </form>
 
