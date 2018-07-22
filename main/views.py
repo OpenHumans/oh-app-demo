@@ -6,15 +6,14 @@ except ImportError:
     from urllib.error import HTTPError
 
 from django.conf import settings
-from django.contrib.auth import login, logout
+from django.contrib.auth import logout
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.utils.safestring import mark_safe
 
 import ohapi
 import requests
-
-from .helpers import oh_code_to_member, oh_client_info
+from openhumans.models import OpenHumansMember
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +33,7 @@ def delete_file(request, file_id):
         oh_member = request.user.openhumansmember
         ohapi.api.delete_files(
             project_member_id=oh_member.oh_id,
-            access_token=oh_member.get_access_token(**oh_client_info()),
+            access_token=oh_member.get_access_token(),
             file_id=file_id)
         return redirect('list')
     return redirect('index')
@@ -46,7 +45,7 @@ def delete_all_oh_files(oh_member):
     """
     ohapi.api.delete_files(
         project_member_id=oh_member.oh_id,
-        access_token=oh_member.get_access_token(**oh_client_info()),
+        access_token=oh_member.get_access_token(),
         all_files=True)
 
 
@@ -65,7 +64,7 @@ def upload_file_to_oh(oh_member, filehandle, metadata):
     """
     # Get the S3 target from Open Humans.
     upload_url = '{}?access_token={}'.format(
-        OH_DIRECT_UPLOAD, oh_member.get_access_token(**oh_client_info()))
+        OH_DIRECT_UPLOAD, oh_member.get_access_token())
     req1 = requests.post(upload_url,
                          data={'project_member_id': oh_member.oh_id,
                                'filename': filehandle.name,
@@ -82,8 +81,7 @@ def upload_file_to_oh(oh_member, filehandle, metadata):
 
     # Report completed upload to Open Humans.
     complete_url = ('{}?access_token={}'.format(
-        OH_DIRECT_UPLOAD_COMPLETE, oh_member.get_access_token(
-            **oh_client_info())))
+        OH_DIRECT_UPLOAD_COMPLETE, oh_member.get_access_token()))
     req3 = requests.post(complete_url,
                          data={'project_member_id': oh_member.oh_id,
                                'file_id': req1.json()['id']})
@@ -92,21 +90,11 @@ def upload_file_to_oh(oh_member, filehandle, metadata):
                                'Bad response when completing upload.')
 
 
-def get_auth_url():
-    if settings.OPENHUMANS_CLIENT_ID and settings.OPENHUMANS_REDIRECT_URI:
-        auth_url = ohapi.api.oauth2_auth_url(
-            client_id=settings.OPENHUMANS_CLIENT_ID,
-            redirect_uri=settings.OPENHUMANS_REDIRECT_URI)
-    else:
-        auth_url = ''
-    return auth_url
-
-
 def index(request):
     """
     Starting page for app.
     """
-    auth_url = get_auth_url()
+    auth_url = OpenHumansMember.get_auth_url()
     if not auth_url:
         messages.info(request,
                       mark_safe(
@@ -125,33 +113,6 @@ def overview(request):
                    'oh_member': oh_member}
         return render(request, 'main/overview.html', context=context)
     return redirect('index')
-
-
-def login_member(request):
-    code = request.GET.get('code', '')
-    try:
-        oh_member = oh_code_to_member(code=code)
-    except Exception:
-        oh_member = None
-    if oh_member:
-        # Log in the user.
-        user = oh_member.user
-        login(request, user,
-              backend='django.contrib.auth.backends.ModelBackend')
-
-
-def complete(request):
-    """
-    Receive user from Open Humans. Store data, start data upload task.
-    """
-    logger.debug("Received user returning from Open Humans.")
-
-    login_member(request)
-    if not request.user.is_authenticated:
-        logger.debug('Invalid code exchange. User returned to start page.')
-        return redirect('/')
-    else:
-        return redirect('overview')
 
 
 def logout_user(request):
@@ -186,7 +147,7 @@ def list_files(request):
     if request.user.is_authenticated:
         oh_member = request.user.openhumansmember
         data = ohapi.api.exchange_oauth2_member(
-                    oh_member.get_access_token(**oh_client_info()))
+                    oh_member.get_access_token())
         context = {'files': data['data']}
         return render(request, 'main/list.html',
                       context=context)
