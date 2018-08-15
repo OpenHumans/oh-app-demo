@@ -24,13 +24,10 @@ To override specific arguments of views provided by openhumans
 from django.contrib import admin
 from django.urls import include, path
 from django.conf.urls import url
-urlpatterns = [
-    path('admin/', admin.site.urls),
-]
 
 urlpatterns = [
     path('', include('main.urls')),
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls)
 ]
 
 urlpatterns += [
